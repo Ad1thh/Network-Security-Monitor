@@ -1,0 +1,38 @@
+{
+    "network": {
+        // Name of the network interface to monitor (e.g., "Ethernet", "Wi-Fi", "eth0", "wlan0")
+        "interface": "Ethernet",
+        // Flow timeout in seconds
+        "flow_timeout": 600
+    },
+    "output": {
+        // Base directory for output files
+        "base_path": "./output",
+        // Directory for ML models
+        "model_path": "./models"
+    },
+    "processing": {
+        // Data collection interval in seconds
+        "interval": 10
+    },
+    "threat_detection": {
+        "thresholds": {
+            // Traffic threshold in bytes
+            "high_traffic": 1000000,
+            // Packets per second threshold
+            "high_packet_rate": 1000
+        }
+    },
+    "logging": {
+        // Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        "level": "INFO",
+        // Log file location
+        "file": "network_analyzer.log"
+    },
+    "dashboard": {
+        // Update interval for dashboard in milliseconds
+        "refresh_rate": 5000,
+        // Maximum points to show in charts
+        "max_data_points": 100
+    }
+} 

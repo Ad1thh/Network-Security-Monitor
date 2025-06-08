@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Security Monitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #1a1b1e;
+            --bg-secondary: #2d2e32;
+            --text-primary: #e4e6eb;
+            --text-secondary: #b0b3b8;
+            --accent-primary: #3a86ff;
+            --accent-secondary: #4895ef;
+            --danger: #ff6b6b;
+            --warning: #ffd93d;
+            --success: #4cd964;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary), #1f2937);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            margin: 10px 0 0;
+        }
+
+        .controls {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-group select, .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #3f4144;
+            border-radius: 8px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.9em;
+        }
+
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .panel {
+            background-color: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel.full-width {
+            grid-column: 1 / -1;
+            min-height: 400px;
+        }
+
+        .panel h2 {
+            margin: 0 0 20px 0;
+            color: var(--text-primary);
+            font-size: 1.2em;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-box {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .network-info {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .network-type {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+        }
+
+        .network-type-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 6px;
+            color: white;
+        }
+
+        .network-type-text {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .network-type-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-left: auto;
+        }
+
+        .status-active {
+            background-color: rgba(76, 217, 100, 0.2);
+            color: #4cd964;
+        }
+
+        .remarks-section {
+            margin-top: 15px;
+        }
+
+        .remarks-title {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .remarks-content {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: var(--text-primary);
+            min-height: 60px;
+        }
+
+        .network-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-good {
+            background-color: #4cd964;
+        }
+
+        .status-warning {
+            background-color: #ffd93d;
+        }
+
+        .status-error {
+            background-color: #ff6b6b;
+        }
+
+        .stat-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin: 5px 0;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .chart-container {
+            flex: 1;
+            position: relative;
+            min-height: 250px;
+        }
+
+        #trafficChart, #threatChart {
+            position: absolute;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table th {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .threat-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .threat-alert {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .severity-high {
+            background-color: rgba(255, 107, 107, 0.2);
+            border-left: 4px solid var(--danger);
+        }
+
+        .severity-medium {
+            background-color: rgba(255, 217, 61, 0.2);
+            border-left: 4px solid var(--warning);
+        }
+
+        .severity-low {
+            background-color: rgba(108, 117, 125, 0.2);
+            border-left: 4px solid var(--text-secondary);
+        }
+
+        .error-message {
+            background-color: rgba(255, 107, 107, 0.2);
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--danger);
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .filter-group {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header>
+            <h1><i class="fas fa-shield-alt"></i> Network Security Monitor</h1>
+            <p>Real-time network traffic analysis and threat detection</p>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="timeRange">Time Range:</label>
+                    <select id="timeRange">
+                        <option value="300">Last 5 minutes</option>
+                        <option value="900">Last 15 minutes</option>
+                        <option value="1800">Last 30 minutes</option>
+                        <option value="3600">Last hour</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="threatSeverity">Threat Severity:</label>
+                    <select id="threatSeverity">
+                        <option value="all">All</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="trafficType">Traffic Type:</label>
+                    <select id="trafficType">
+                        <option value="all">All</option>
+                        <option value="upload">Upload</option>
+                        <option value="download">Download</option>
+                        <option value="interactive">Interactive</option>
+                        <option value="mixed">Mixed</option>
+                    </select>
+                </div>
+                <button id="exportData" class="btn-primary">Export Data</button>
+            </div>
+        </header>
+
+        <main>
+            <div class="grid-container">
+                <!-- System Statistics -->
+                <div class="card">
+                    <h2>System Statistics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <i class="fas fa-microchip"></i>
+                            <div class="stat-value">
+                                <span id="cpuUsage">0.0</span>
+                                <span class="unit">%</span>
+                            </div>
+                            <div class="stat-label">CPU Usage</div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-memory"></i>
+                            <div class="stat-value">
+                                <span id="memoryUsage">0.0</span>
+                                <span class="unit">%</span>
+                            </div>
+                            <div class="stat-label">Memory Usage</div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-network-wired"></i>
+                            <div class="stat-value">
+                                <span id="activeConnections">0</span>
+                            </div>
+                            <div class="stat-label">Active Connections</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Statistics -->
+                <div class="card">
+                    <h2>Network Statistics</h2>
+                    <div class="interface-selector">
+                        <div class="current-interface" id="networkInterface">
+                            <i class="fas fa-ethernet"></i>
+                            Interface: -
+                            <span class="status-badge inactive">Inactive</span>
+                        </div>
+                        <button class="btn-secondary" id="changeInterface">
+                            <i class="fas fa-exchange-alt"></i> Change Interface
+                        </button>
+                    </div>
+                    <div class="interface-list" id="interfaceList" style="display: none;">
+                        <!-- Interfaces will be added here dynamically -->
+                    </div>
+                    <div class="network-stats">
+                        <div class="stat-row">
+                            <div class="stat-label">Bytes Sent</div>
+                            <div class="stat-value" id="bytesSent">0 B/s</div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Bytes Received</div>
+                            <div class="stat-value" id="bytesReceived">0 B/s</div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Packets/s</div>
+                            <div class="stat-value" id="packetsRate">0</div>
+                        </div>
+                    </div>
+                    <div class="remarks" id="remarks">
+                        No issues detected
+                    </div>
+                </div>
+
+                <!-- Traffic Chart -->
+                <div class="card chart-card">
+                    <h2>Network Traffic</h2>
+                    <div class="chart-container">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Threat Detection -->
+                <div class="card chart-card">
+                    <h2>Threat Detection</h2>
+                    <div class="chart-container">
+                        <canvas id="threatChart"></canvas>
+                    </div>
+                    <div class="threat-list" id="threatList">
+                        <!-- Threats will be added here dynamically -->
+                    </div>
+                </div>
+
+                <!-- Traffic Classification -->
+                <div class="card chart-card">
+                    <h2>Traffic Classification</h2>
+                    <div class="chart-container">
+                        <canvas id="classificationChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Active Connections -->
+                <div class="card">
+                    <h2>Active Connections</h2>
+                    <div class="table-container">
+                        <table id="connectionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Local</th>
+                                    <th>Remote</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Connections will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html> 
