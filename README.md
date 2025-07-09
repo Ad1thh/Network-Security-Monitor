@@ -124,19 +124,24 @@ network-security-monitor/
 └── docker-compose.yml     # Docker Compose configuration
 ```
 
-## Contributing
+ ## Outcomes
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit changes
-4. Push to the branch
-5. Create a Pull Request
+- Successfully implemented a modular, real-time network monitoring system combining classical machine learning and efficient system design.
+- Integrated an Isolation Forest model for anomaly detection and a Random Forest classifier for intelligent traffic classification.
+- Achieved high precision and recall across multiple traffic categories using live data without relying on external datasets.
+- Deployed a responsive Flask-based dashboard for live visualization of system stats, traffic patterns, and threats.
 
-## License
+## Limitations
 
-[Add your license information here]
+- Does not currently support encrypted traffic inspection or advanced deep learning models for complex threat detection.
+- Performance is optimized for academic or small enterprise environments and may require tuning for high-throughput production systems.
+- Requires elevated privileges to access low-level packet data, which may limit portability in some OS configurations.
+- Limited feature engineering for protocol-specific analysis, which could affect detection depth.
 
-## Acknowledgments
+## Future Scope
 
-- List any third-party tools or libraries used
-- Credit contributors or inspiration sources 
+- Extend support for encrypted traffic analysis using flow-based ML techniques.
+- Integrate deep learning models for more robust detection of zero-day and stealthy attacks.
+- Add centralized logging and integration with SIEM platforms like Splunk or ELK Stack.
+- Enhance dashboard with customizable reporting, user authentication, and multi-interface support.
+- Expand dataset variety by incorporating publicly labeled traffic samples for hybrid training.
